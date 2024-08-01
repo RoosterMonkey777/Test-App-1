@@ -1,4 +1,4 @@
-package com.example.testapp1
+package com.example.testapp1.registration
 
 import android.os.Bundle
 import android.util.Log
@@ -11,6 +11,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import com.amplifyframework.core.Amplify
+import com.example.testapp1.R
 
 class ConfirmationFragment : Fragment() {
 

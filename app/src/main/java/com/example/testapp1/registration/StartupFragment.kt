@@ -1,4 +1,4 @@
-package com.example.testapp1
+package com.example.testapp1.registration
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.example.testapp1.R
 
 class StartupFragment : Fragment() {
 

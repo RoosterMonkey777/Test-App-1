@@ -8,7 +8,7 @@
 
     <fragment
         android:id="@+id/startupFragment"
-        android:name="com.example.testapp1.StartupFragment"
+        android:name="com.example.testapp1.registration.StartupFragment"
         android:label="fragment_startup"
         tools:layout="@layout/fragment_startup">
         <action
@@ -22,7 +22,7 @@
 
     <fragment
         android:id="@+id/signupFragment"
-        android:name="com.example.testapp1.SignupFragment"
+        android:name="com.example.testapp1.registration.SignupFragment"
         android:label="fragment_signup"
         tools:layout="@layout/fragment_signup">
         <action
@@ -37,7 +37,7 @@
 
     <fragment
         android:id="@+id/confirmationFragment"
-        android:name="com.example.testapp1.ConfirmationFragment"
+        android:name="com.example.testapp1.registration.ConfirmationFragment"
         android:label="fragment_confirmation"
         tools:layout="@layout/fragment_confirmation">
         <action
@@ -52,16 +52,12 @@
 
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.example.testapp1.LoginFragment"
+        android:name="com.example.testapp1.registration.LoginFragment"
         android:label="fragment_login"
         tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_loginFragment_to_signupFragment"
             app:destination="@id/signupFragment" />
     </fragment>
-
-
-
-
 
 </navigation>

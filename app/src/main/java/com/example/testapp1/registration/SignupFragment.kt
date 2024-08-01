@@ -1,4 +1,4 @@
-package com.example.testapp1
+package com.example.testapp1.registration
 
 import android.os.Bundle
 import android.util.Log
@@ -7,13 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import aws.sdk.kotlin.services.cognitoidentityprovider.model.UsernameExistsException
 import com.amplifyframework.auth.AuthUserAttributeKey
 import com.amplifyframework.auth.options.AuthSignUpOptions
 import com.amplifyframework.core.Amplify
+import com.example.testapp1.R
 
 class SignupFragment : Fragment() {
 
@@ -39,6 +40,11 @@ class SignupFragment : Fragment() {
             if (validateInput()) {
                 signup()
             }
+        }
+
+        val loginTextView: TextView = view.findViewById(R.id.tv_login)
+        loginTextView.setOnClickListener {
+            findNavController().navigate(R.id.action_signupFragment_to_loginFragment)
         }
 
     }
