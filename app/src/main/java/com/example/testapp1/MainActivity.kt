@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.loginFragment, R.id.signupFragment -> supportActionBar?.hide()
+                R.id.confirmationFragment, R.id.startupFragment, R.id.loginFragment, R.id.signupFragment -> supportActionBar?.hide()
                 else -> {
                     supportActionBar?.show()
                     setupActionBarWithNavController(navController, appBarConfiguration)

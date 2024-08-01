@@ -1,6 +1,7 @@
 package com.example.testapp1
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,15 +10,16 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import aws.sdk.kotlin.services.cognitoidentityprovider.model.UsernameExistsException
 import com.amplifyframework.auth.AuthUserAttributeKey
 import com.amplifyframework.auth.options.AuthSignUpOptions
 import com.amplifyframework.core.Amplify
 
 class SignupFragment : Fragment() {
 
-    private lateinit var etUsername: EditText
     private lateinit var etEmail: EditText
     private lateinit var etPassword: EditText
+    private lateinit var etConfirmPassword: EditText
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -29,21 +31,42 @@ class SignupFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        etUsername = view.findViewById(R.id.et_username)
         etEmail = view.findViewById(R.id.et_email)
         etPassword = view.findViewById(R.id.et_password)
+        etConfirmPassword = view.findViewById(R.id.et_confirm_password)
 
         view.findViewById<Button>(R.id.btn_signup).setOnClickListener {
-            signup()
+            if (validateInput()) {
+                signup()
+            }
         }
 
-        view.findViewById<Button>(R.id.btn_back_to_login).setOnClickListener {
-            findNavController().navigateUp()
+    }
+
+    private fun validateInput(): Boolean {
+        val email = etEmail.text.toString()
+        val password = etPassword.text.toString()
+        val confirmPassword = etConfirmPassword.text.toString()
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(context, "Invalid email address", Toast.LENGTH_SHORT).show()
+            return false
         }
+
+        if (password != confirmPassword) {
+            Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        if (password.length < 8) {
+            Toast.makeText(context, "Password must be at least 8 characters long", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        return true
     }
 
     private fun signup() {
-        val username = etUsername.text.toString()
         val email = etEmail.text.toString()
         val password = etPassword.text.toString()
 
@@ -51,24 +74,30 @@ class SignupFragment : Fragment() {
             .userAttribute(AuthUserAttributeKey.email(), email)
             .build()
 
-        Amplify.Auth.signUp(username, password, options,
+        Amplify.Auth.signUp(email, password, options,
             { result ->
-                if (result.isSignUpComplete) {
-                    activity?.runOnUiThread {
+                activity?.runOnUiThread {
+                    if (result.isSignUpComplete) {
                         Toast.makeText(context, "Sign up succeeded", Toast.LENGTH_SHORT).show()
                         findNavController().navigate(R.id.action_signupFragment_to_loginFragment)
-                    }
-                } else {
-                    // Handle the next step if sign up is not complete (e.g., confirmation step)
-                    activity?.runOnUiThread {
+                    } else {
                         Toast.makeText(context, "Please confirm your email", Toast.LENGTH_SHORT).show()
-                        // Navigate to a confirmation fragment if you have one
+                        val bundle = Bundle().apply {
+                            putString("email", email)
+                        }
+                        findNavController().navigate(R.id.action_signupFragment_to_confirmationFragment, bundle)
                     }
                 }
             },
             { error ->
                 activity?.runOnUiThread {
-                    Toast.makeText(context, "Sign up failed: ${error.toString()}", Toast.LENGTH_SHORT).show()
+                    val errorMessage = error.message ?: "Sign up failed"
+                    if (errorMessage.contains("Username already exists")) {
+                        Toast.makeText(context, "Email already in use, try another", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(context, "Sign up failed: $errorMessage", Toast.LENGTH_SHORT).show()
+                    }
+                    Log.e("SignUpFailed", error.toString())
                 }
             }
         )
