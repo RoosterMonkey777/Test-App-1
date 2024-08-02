@@ -112,7 +112,7 @@
 
 
         <TextView
-            android:id="@+id/btn_create_account"
+            android:id="@+id/tv_signup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="true"

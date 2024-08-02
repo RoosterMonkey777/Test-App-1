@@ -1,59 +1,104 @@
 package com.example.testapp1
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
+import androidx.navigation.fragment.findNavController
+import com.amplifyframework.auth.cognito.result.AWSCognitoAuthSignOutResult
+import com.amplifyframework.core.Amplify
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [HomeFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class HomeFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var tvEmail: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment HomeFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            HomeFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        tvEmail = view.findViewById(R.id.tv_email)
+
+        fetchUserEmail()
+
+        view.findViewById<Button>(R.id.btn_signout).setOnClickListener {
+            signOut()
+
+        }
+
+    }
+
+    private fun signOut() {
+        Amplify.Auth.signOut { signOutResult ->
+            when (signOutResult) {
+                is AWSCognitoAuthSignOutResult.CompleteSignOut -> {
+                    // Sign out completed fully and without errors.
+                    activity?.runOnUiThread {
+                        Toast.makeText(context, "Signed out successfully", Toast.LENGTH_SHORT).show()
+                        findNavController().navigate(R.id.action_homeFragment_to_loginFragment)
+
+                    }
+                    Log.i("AuthQuickStart", "Signed out successfully")
+                }
+                is AWSCognitoAuthSignOutResult.PartialSignOut -> {
+                    // Sign out completed with some errors. User is signed out of the device.
+                    signOutResult.hostedUIError?.let {
+                        Log.e("AuthQuickStart", "HostedUI Error", it.exception)
+                        // Optional: Re-launch it.url in a Custom tab to clear Cognito web session.
+                    }
+                    signOutResult.globalSignOutError?.let {
+                        Log.e("AuthQuickStart", "GlobalSignOut Error", it.exception)
+                        // Optional: Use escape hatch to retry revocation of it.accessToken.
+                    }
+                    signOutResult.revokeTokenError?.let {
+                        Log.e("AuthQuickStart", "RevokeToken Error", it.exception)
+                        // Optional: Use escape hatch to retry revocation of it.refreshToken.
+                    }
+                }
+                is AWSCognitoAuthSignOutResult.FailedSignOut -> {
+                    // Sign out failed with an exception, leaving the user signed in.
+                    activity?.runOnUiThread {
+                        Toast.makeText(context, "Sign out failed: ${signOutResult.exception.message}", Toast.LENGTH_SHORT).show()
+                    }
+                    Log.e("AuthQuickStart", "Sign out Failed", signOutResult.exception)
                 }
             }
+        }
+    }
+
+    private fun fetchUserEmail() {
+        // Call the Amplify Auth method to fetch user attributes
+        Amplify.Auth.fetchUserAttributes(
+            // Lambda function to handle successful response
+            { attributes ->
+                // Find the email attribute from the list of attributes
+                val emailAttribute = attributes.firstOrNull { it.key.keyString == "email" }
+                // Update the UI on the main thread
+                activity?.runOnUiThread {
+                    // Set the email TextView to the email attribute value or a default message if not found
+                    tvEmail.text = emailAttribute?.value ?: "Email not found"
+                }
+            },
+            // Lambda function to handle error response
+            { error ->
+                // Update the UI on the main thread
+                activity?.runOnUiThread {
+                    // Show a toast message indicating the failure
+                    Toast.makeText(context, "Failed to fetch user attributes", Toast.LENGTH_SHORT).show()
+                    // Log the error for debugging
+                    Log.e("FetchUserAttributesFailed", error.toString())
+                }
+            }
+        )
     }
 }

@@ -87,7 +87,7 @@ class SignupFragment : Fragment() {
                         Toast.makeText(context, "Sign up succeeded", Toast.LENGTH_SHORT).show()
                         findNavController().navigate(R.id.action_signupFragment_to_loginFragment)
                     } else {
-                        Toast.makeText(context, "Please confirm your email", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "A verification code has been sent to your email", Toast.LENGTH_LONG).show()
                         val bundle = Bundle().apply {
                             putString("email", email)
                         }
@@ -99,7 +99,7 @@ class SignupFragment : Fragment() {
                 activity?.runOnUiThread {
                     val errorMessage = error.message ?: "Sign up failed"
                     if (errorMessage.contains("Username already exists")) {
-                        Toast.makeText(context, "Email already in use, try another", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "Email is already in use, try another", Toast.LENGTH_LONG).show()
                     } else {
                         Toast.makeText(context, "Sign up failed: $errorMessage", Toast.LENGTH_SHORT).show()
                     }
